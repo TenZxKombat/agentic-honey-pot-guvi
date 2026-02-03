@@ -6,4 +6,4 @@ Phase 1:
 - FastAPI project bootstrap
 - Health check endpoint
 
-More features will be added phase-by-phase.
+
