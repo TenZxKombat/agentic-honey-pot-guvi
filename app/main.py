@@ -1,16 +1,14 @@
-from app.memory import get_session, add_message
-from app.schemas import IncomingRequest, AgentResponse
-from app.security import verify_api_key
 from fastapi import FastAPI, Depends
+from app.security import verify_api_key
+from app.schemas import IncomingRequest, AgentResponse
+from app.memory import get_session, add_message
+from app.detector import detect_scam_intent
 
-app = FastAPI(
-    title="Agentic Honeypot API",
-    description="Agentic Honey-Pot for Scam Detection & Intelligence Extraction",
-    version="1.0.0"
-)
+app = FastAPI(title="Agentic Honey-Pot API")
+
 
 @app.get("/health", dependencies=[Depends(verify_api_key)])
-def health_check():
+def health():
     return {"status": "ok"}
 
 
@@ -20,26 +18,36 @@ def health_check():
     dependencies=[Depends(verify_api_key)]
 )
 def honeypot_message(request: IncomingRequest):
-
+    
     session = get_session(request.sessionId)
 
-    # Save metadata once
     if session["metadata"] is None:
         session["metadata"] = request.metadata
 
-    # Store incoming message
     add_message(
-        session,
+        session=session,
         sender=request.message.sender,
         text=request.message.text,
         timestamp=request.message.timestamp
     )
 
-    reply_text = "Can you explain this more clearly?"
+    detection = detect_scam_intent(request.message.text)
+
+    session["intelligence"]["suspiciousKeywords"].extend(
+        detection["matched_keywords"]
+    )
+
+    if detection["is_scam"]:
+        session["scamDetected"] = True
+
+    if session["scamDetected"]:
+        reply_text = "I’m confused. Why would my account be blocked?"
+    else:
+        reply_text = "Hello, how can I help you?"
 
     add_message(
-        session,
-        sender="agent",
+        session=session,
+        sender="user",
         text=reply_text,
         timestamp="now"
     )
@@ -48,3 +56,4 @@ def honeypot_message(request: IncomingRequest):
         "status": "success",
         "reply": reply_text
     }
+

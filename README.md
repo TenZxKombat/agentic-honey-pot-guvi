@@ -28,3 +28,12 @@ Phase 4: Session Memory & Multi-Turn Conversation Handling
 - Agent responses appended to conversation history
 - Schema-safe handling of optional metadata
 - Foundation for agent reasoning and intelligence extraction
+
+Phase 5: 
+- Scam Intent Detection & Agent Activation
+- Rule-based scam intent detection using weighted keyword analysis
+- Confidence scoring to quantify scam likelihood
+- Deterministic and explainable detection logic (no black-box decisions)
+- Automatic activation of agentic behavior upon scam confirmation
+- Tracking of suspicious keywords for intelligence extraction
+- Prevents premature agent engagement for non-scam conversations
