@@ -19,3 +19,12 @@ Phase 3:
 - Validation of conversationHistory structure
 - Prevents malformed or unexpected requests
 - Ensures compatibility with automated evaluation
+
+Phase 4: Session Memory & Multi-Turn Conversation Handling
+- In-memory session management using unique sessionId
+- Persistent conversation state across multiple API calls
+- Support for multi-turn scam conversations
+- Automatic grouping of messages by session
+- Agent responses appended to conversation history
+- Schema-safe handling of optional metadata
+- Foundation for agent reasoning and intelligence extraction

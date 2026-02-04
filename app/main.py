@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends
-from app.security import verify_api_key
+from app.memory import get_session, add_message
 from app.schemas import IncomingRequest, AgentResponse
+from app.security import verify_api_key
+from fastapi import FastAPI, Depends
 
 app = FastAPI(
     title="Agentic Honeypot API",
@@ -19,8 +20,31 @@ def health_check():
     dependencies=[Depends(verify_api_key)]
 )
 def honeypot_message(request: IncomingRequest):
-    # For now, just a dummy reply to confirm the endpoint works
+
+    session = get_session(request.sessionId)
+
+    # Save metadata once
+    if session["metadata"] is None:
+        session["metadata"] = request.metadata
+
+    # Store incoming message
+    add_message(
+        session,
+        sender=request.message.sender,
+        text=request.message.text,
+        timestamp=request.message.timestamp
+    )
+
+    reply_text = "Can you explain this more clearly?"
+
+    add_message(
+        session,
+        sender="agent",
+        text=reply_text,
+        timestamp="now"
+    )
+
     return {
         "status": "success",
-        "reply": "Hello, how can I help you?"
+        "reply": reply_text
     }
