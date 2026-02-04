@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from app.security import verify_api_key
 
 app = FastAPI(
     title="Agentic Honeypot API",
@@ -6,6 +7,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-@app.get("/health")
+@app.get("/health", dependencies=[Depends(verify_api_key)])
 def health_check():
     return {"status": "ok"}
