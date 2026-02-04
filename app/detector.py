@@ -1,17 +1,20 @@
 import re
 
 SCAM_KEYWORDS = {
-    "urgent": 0.2,
+    "urgent": 0.25,
     "immediately": 0.2,
     "blocked": 0.2,
     "suspended": 0.2,
     "verify": 0.15,
-    "bank": 0.15,
+    "bank": 0.2,
     "upi": 0.25,
     "otp": 0.3,
     "click": 0.2,
     "link": 0.2,
-    "kyc": 0.25
+    "kyc": 0.25,
+    "share": 0.2,
+    "details": 0.15,
+    "now": 0.1
 }
 
 SCAM_THRESHOLD = 0.6
