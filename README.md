@@ -37,3 +37,9 @@ Phase 5:
 - Automatic activation of agentic behavior upon scam confirmation
 - Tracking of suspicious keywords for intelligence extraction
 - Prevents premature agent engagement for non-scam conversations
+
+Phase 6A: Stateful Agentic Engagement (Rule-Based)
+- Rule-based autonomous agent activated only on scam messages
+- Explicit session-level agent state management using agentStage
+- Multi-stage engagement strategy to mimic real human behavior
+- Deterministic and explainable textbook honeypot behavior
