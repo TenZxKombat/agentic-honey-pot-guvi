@@ -4,7 +4,7 @@ SCAM_KEYWORDS = {
     "bank": 0.25,
     "blocked": 0.3,
     "verify": 0.25,
-    "upi": 0.35,
+    "upi": 0.6,
     "otp": 0.4,
     "urgent": 0.3,
     "act": 0.2,

@@ -43,3 +43,10 @@ Phase 6A: Stateful Agentic Engagement (Rule-Based)
 - Explicit session-level agent state management using agentStage
 - Multi-stage engagement strategy to mimic real human behavior
 - Deterministic and explainable textbook honeypot behavior
+
+Phase 6B: Semantic-Aware Agent Responses
+- Lightweight semantic intent detection for scam messages
+- Intent-specific agent reply strategies (bank, UPI, OTP, links)
+- Combines session state (agentStage) with message semantics
+- Rule-based, explainable, and deterministic implementation
+- Avoids premature LLM usage while improving realism
