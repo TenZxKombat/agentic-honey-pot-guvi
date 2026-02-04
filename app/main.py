@@ -3,6 +3,7 @@ from app.security import verify_api_key
 from app.schemas import IncomingRequest, AgentResponse
 from app.memory import get_session, add_message
 from app.detector import detect_scam_intent
+from app.agent import generate_agent_reply
 
 app = FastAPI(title="Agentic Honey-Pot API")
 
@@ -37,7 +38,7 @@ def honeypot_message(request: IncomingRequest):
     detection = detect_scam_intent(request.message.text)
     session["lastDetection"] = detection
 
-    # 5. Update intelligence store
+    # 5. Update intelligence (keywords only for now)
     session["intelligence"]["suspiciousKeywords"].extend(
         detection["matched_keywords"]
     )
@@ -46,13 +47,13 @@ def honeypot_message(request: IncomingRequest):
     if detection["is_scam"]:
         session["scamDetected"] = True
 
-    # 7. Phase 5 reply logic (NO agent yet)
+    # 7. PHASE 6A — Agentic engagement logic
     if detection["is_scam"]:
-        reply_text = "I’m not sure what this means. Can you explain?"
+        reply_text = generate_agent_reply(session)
     else:
         reply_text = "Hello, how can I help you?"
 
-    # 8. Store reply
+    # 8. Store agent reply
     add_message(
         session=session,
         sender="user",

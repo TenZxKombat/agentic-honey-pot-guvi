@@ -21,6 +21,7 @@ def get_session(session_id: str) -> dict:
             },
             "scamDetected": False,   # session-level flag
             "lastDetection": None,   # message-level detection
+            "agentStage": 0,
             "completed": False
         }
     return SESSIONS[session_id]
