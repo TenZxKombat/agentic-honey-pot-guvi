@@ -12,3 +12,10 @@ Phase 2:
 - Centralized security dependency in FastAPI
 - API key managed via environment variables
 - Ensures only authorized clients can access the API
+
+Phase 3:
+- Request and response schema validation using Pydantic
+- Strict adherence to GUVI-defined input and output formats
+- Validation of conversationHistory structure
+- Prevents malformed or unexpected requests
+- Ensures compatibility with automated evaluation
