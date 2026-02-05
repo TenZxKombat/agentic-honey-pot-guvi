@@ -12,7 +12,16 @@ app = FastAPI(title="Agentic Honey-Pot API")
 
 
 # ─────────────────────────────────────────────
-# Health Check (KEEP IN PROD)
+# ROOT ENDPOINT (FOR GUVI ENDPOINT TESTER)
+# Accepts GET + POST
+# ─────────────────────────────────────────────
+@app.api_route("/", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])
+def root():
+    return {"status": "ok"}
+
+
+# ─────────────────────────────────────────────
+# HEALTH CHECK (OPTIONAL BUT SAFE)
 # ─────────────────────────────────────────────
 @app.get("/health", dependencies=[Depends(verify_api_key)])
 def health():
@@ -20,7 +29,7 @@ def health():
 
 
 # ─────────────────────────────────────────────
-# Honeypot Endpoint
+# HONEYPOT ENDPOINT (MAIN EVALUATION)
 # ─────────────────────────────────────────────
 @app.post(
     "/honeypot/message",
@@ -29,14 +38,14 @@ def health():
 )
 def honeypot_message(request: IncomingRequest):
 
-    # 1️⃣ Get or create session
+    # 1. Get or create session
     session = get_session(request.sessionId)
 
-    # 2️⃣ Store metadata once
+    # 2. Store metadata once
     if session["metadata"] is None:
         session["metadata"] = request.metadata
 
-    # 3️⃣ Store incoming scammer message
+    # 3. Store incoming scammer message
     add_message(
         session=session,
         sender=request.message.sender,
@@ -44,22 +53,22 @@ def honeypot_message(request: IncomingRequest):
         timestamp=request.message.timestamp
     )
 
-    # 4️⃣ Phase 8A — Intelligence extraction
+    # 4. Intelligence extraction (Phase 8A)
     extract_intelligence(
         request.message.text,
         session["intelligence"]
     )
 
-    # 5️⃣ Phase 5 — Scam detection
+    # 5. Scam detection
     detection = detect_scam_intent(request.message.text)
     if detection["is_scam"]:
         session["scamDetected"] = True
 
-    # 6️⃣ Agent reply (fast, deterministic)
+    # 6. Agent reply
     intent = detect_intent(request.message.text)
     reply_text = generate_agent_reply(session, intent)
 
-    # 7️⃣ Store agent reply
+    # 7. Store agent reply
     add_message(
         session=session,
         sender="user",
@@ -68,8 +77,8 @@ def honeypot_message(request: IncomingRequest):
     )
 
     # ─────────────────────────────────────────────
-    # Phase 9 — GUVI Final Callback (CORRECTED)
-    # Fires AFTER 6 scammer messages
+    # Phase 9 — GUVI Final Callback
+    # Fires after 6 scammer messages
     # ─────────────────────────────────────────────
     scammer_message_count = sum(
         1 for m in session["messages"] if m["sender"] == "scammer"
@@ -82,13 +91,13 @@ def honeypot_message(request: IncomingRequest):
     if (
         session.get("scamDetected") is True
         and session.get("completed") is not True
-        and scammer_message_count >= 6   # ✅ FIXED CONDITION
+        and scammer_message_count >= 6
         and has_intelligence
     ):
         send_final_result(session, request.sessionId)
         session["completed"] = True
 
-    # 8️⃣ Return response
+    # 8. Return response
     return {
         "status": "success",
         "reply": reply_text
