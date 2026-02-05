@@ -50,3 +50,14 @@ Phase 6B: Semantic-Aware Agent Responses
 - Combines session state (agentStage) with message semantics
 - Rule-based, explainable, and deterministic implementation
 - Avoids premature LLM usage while improving realism
+
+Phase 8: Non-Blocking Agentic Conversation (Low-Latency LLM Integration)
+- Realistic, human-like conversation flow
+- Sub-200ms API response time
+- Incoming scammer message is received
+- Message is stored in session memory
+- Scam intent detection runs in parallel (non-blocking)
+- Immediate response is generated using a fast fallback agent
+- LLM is triggered asynchronously in the background
+- LLM reply is stored for the next message in the same session
+- Subsequent messages use the prepared LLM response
