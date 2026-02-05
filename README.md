@@ -61,3 +61,10 @@ Phase 8: Non-Blocking Agentic Conversation (Low-Latency LLM Integration)
 - LLM is triggered asynchronously in the background
 - LLM reply is stored for the next message in the same session
 - Subsequent messages use the prepared LLM response
+
+Phase 8A: Scam Intelligence Extraction & Aggregation
+- Regex-based deterministic extraction is used for all intelligence types
+- Phone numbers are extracted before bank accounts to avoid misclassification
+- Numeric values already identified as phone numbers are explicitly excluded from bank account detection
+- All extracted entities are deduplicated
+- Keywords are matched using a curated scam vocabulary set

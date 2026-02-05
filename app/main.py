@@ -7,22 +7,25 @@ from app.schemas import IncomingRequest, AgentResponse
 from app.memory import get_session, add_message
 from app.detector import detect_scam_intent
 from app.intent import detect_intent
-from app.agent import generate_agent_reply          # FAST fallback
-from app.llm_agent import generate_llm_reply         # SLOW but smart
+from app.agent import generate_agent_reply          # fast fallback
+from app.llm_agent import generate_llm_reply         # background LLM
+from app.extractor import extract_intelligence       # Phase 8A
 
 app = FastAPI(title="Agentic Honey-Pot API")
 
 
+# ─────────────────────────────────────────────
+# Health Check
+# ─────────────────────────────────────────────
 @app.get("/health", dependencies=[Depends(verify_api_key)])
 def health():
     return {"status": "ok"}
 
 
+# ─────────────────────────────────────────────
+# Background LLM Task (NON-BLOCKING)
+# ─────────────────────────────────────────────
 def run_llm_in_background(session_snapshot: dict):
-    """
-    Runs LLM without blocking API response.
-    Stores reply for NEXT turn.
-    """
     llm_reply = generate_llm_reply(
         conversation_history=session_snapshot["messages"],
         intelligence=session_snapshot["intelligence"]
@@ -31,6 +34,9 @@ def run_llm_in_background(session_snapshot: dict):
         session_snapshot["pendingLLMReply"] = llm_reply
 
 
+# ─────────────────────────────────────────────
+# Main Honeypot Endpoint
+# ─────────────────────────────────────────────
 @app.post(
     "/honeypot/message",
     response_model=AgentResponse,
@@ -53,7 +59,15 @@ def honeypot_message(request: IncomingRequest):
     )
 
     # ─────────────────────────────────────────────
-    # Phase 5: Scam detection (fast, parallel)
+    # Phase 8A: Intelligence Extraction (INSTANT)
+    # ─────────────────────────────────────────────
+    extract_intelligence(
+        request.message.text,
+        session["intelligence"]
+    )
+
+    # ─────────────────────────────────────────────
+    # Phase 5: Scam Detection (FAST)
     # ─────────────────────────────────────────────
     detection = detect_scam_intent(request.message.text)
     session["lastDetection"] = detection
@@ -61,24 +75,20 @@ def honeypot_message(request: IncomingRequest):
     if detection["is_scam"]:
         session["scamDetected"] = True
 
-    session["intelligence"]["suspiciousKeywords"].extend(
-        detection.get("matched_keywords", [])
-    )
-
     # ─────────────────────────────────────────────
-    # Phase 8: NON-BLOCKING conversation
+    # Phase 8: Low-Latency Conversation
     # ─────────────────────────────────────────────
 
-    # If LLM already prepared a reply earlier → use it NOW
+    # Use prepared LLM reply if available
     if "pendingLLMReply" in session:
         reply_text = session.pop("pendingLLMReply")
 
     else:
-        # FAST immediate reply (always <200ms)
+        # Immediate fallback reply (<200ms)
         intent = detect_intent(request.message.text)
         reply_text = generate_agent_reply(session, intent)
 
-        # Fire-and-forget LLM for next turn
+        # Fire LLM asynchronously for NEXT turn
         session_snapshot = deepcopy(session)
 
         Thread(
@@ -95,8 +105,25 @@ def honeypot_message(request: IncomingRequest):
         timestamp="now"
     )
 
-    # 5. Return response (IMMEDIATE)
+    # 5. Return response immediately
     return {
         "status": "success",
         "reply": reply_text
+    }
+
+
+# ─────────────────────────────────────────────
+# DEBUG ENDPOINT (FOR LOCAL TESTING ONLY)
+# ❌ REMOVE BEFORE FINAL SUBMISSION
+# ─────────────────────────────────────────────
+@app.get(
+    "/debug/session/{session_id}",
+    dependencies=[Depends(verify_api_key)]
+)
+def debug_session(session_id: str):
+    session = get_session(session_id)
+    return {
+        "messages": session["messages"],
+        "intelligence": session["intelligence"],
+        "scamDetected": session["scamDetected"]
     }
